@@ -1,4 +1,8 @@
-# rust-ansi-term [![ansi-term on crates.io](http://meritbadge.herokuapp.com/ansi-term)](https://crates.io/crates/ansi_term) [![Build status](https://img.shields.io/travis/ogham/rust-ansi-term/master.svg?style=flat)](https://travis-ci.org/ogham/rust-ansi-term) [![Build status](https://img.shields.io/appveyor/ci/ogham/rust-ansi-term/master.svg?style=flat&logo=AppVeyor&logoColor=silver)](https://ci.appveyor.com/project/ogham/rust-ansi-term) [![Coverage status](https://coveralls.io/repos/ogham/rust-ansi-term/badge.svg?branch=master&service=github)](https://coveralls.io/github/ogham/rust-ansi-term?branch=master)
+# yansi-term 
+> Adapted from [`rust-ansi-term`](https://github.com/ogham/rust-ansi-term)
+>
+> Refactor for use [`fmt::Display`](https://doc.rust-lang.org/std/fmt/trait.Display.html) and `FnOnce(&mut fmt::Formatter) -> fmt::Result` 
+
 
 This is a library for controlling colours and formatting, such as red bold text or blue underlined text, on ANSI terminals.
 
@@ -126,58 +130,4 @@ You can also access full 24-bit colour by using the `Colour::RGB` variant, which
 use ansi_term::Colour::RGB;
 
 RGB(70, 130, 180).paint("Steel blue");
-```
-
-## Combining successive coloured strings
-
-The benefit of writing ANSI escape codes to the terminal is that they *stack*: you do not need to end every coloured string with a reset code if the text that follows it is of a similar style.
-For example, if you want to have some blue text followed by some blue bold text, it’s possible to send the ANSI code for blue, followed by the ANSI code for bold, and finishing with a reset code without having to have an extra one between the two strings.
-
-This crate can optimise the ANSI codes that get printed in situations like this, making life easier for your terminal renderer.
-The `ANSIStrings` struct takes a slice of several `ANSIString` values, and will iterate over each of them, printing only the codes for the styles that need to be updated as part of its formatting routine.
-
-The following code snippet uses this to enclose a binary number displayed in red bold text inside some red, but not bold, brackets:
-
-```rust
-use ansi_term::Colour::Red;
-use ansi_term::{ANSIString, ANSIStrings};
-
-let some_value = format!("{:b}", 42);
-let strings: &[ANSIString<'static>] = &[
-    Red.paint("["),
-    Red.bold().paint(some_value),
-    Red.paint("]"),
-];
-
-println!("Value: {}", ANSIStrings(strings));
-```
-
-There are several things to note here.
-Firstly, the `paint` method can take *either* an owned `String` or a borrowed `&str`.
-Internally, an `ANSIString` holds a copy-on-write (`Cow`) string value to deal with both owned and borrowed strings at the same time.
-This is used here to display a `String`, the result of the `format!` call, using the same mechanism as some statically-available `&str` slices.
-Secondly, that the `ANSIStrings` value works in the same way as its singular counterpart, with a `Display` implementation that only performs the formatting when required.
-
-## Byte strings
-
-This library also supports formatting `[u8]` byte strings; this supports applications working with text in an unknown encoding.
-`Style` and `Colour` support painting `[u8]` values, resulting in an `ANSIByteString`.
-This type does not implement `Display`, as it may not contain UTF-8, but it does provide a method `write_to` to write the result to any value that implements `Write`:
-
-```rust
-use ansi_term::Colour::Green;
-
-Green.paint("user data".as_bytes()).write_to(&mut std::io::stdout()).unwrap();
-```
-
-Similarly, the type `ANSIByteStrings` supports writing a list of `ANSIByteString` values with minimal escape sequences:
-
-```rust
-use ansi_term::Colour::Green;
-use ansi_term::ANSIByteStrings;
-
-ANSIByteStrings(&[
-    Green.paint("user data 1\n".as_bytes()),
-    Green.bold().paint("user data 2\n".as_bytes()),
-]).write_to(&mut std::io::stdout()).unwrap();
 ```

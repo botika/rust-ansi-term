@@ -10,9 +10,11 @@
 /// println!("{}", style.paint("Bold on black"));
 /// ```
 #[derive(PartialEq, Clone, Copy)]
-#[cfg_attr(feature = "derive_serde_style", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(
+    feature = "derive_serde_style",
+    derive(serde::Deserialize, serde::Serialize)
+)]
 pub struct Style {
-
     /// The style's foreground colour, if it has one.
     pub foreground: Option<Colour>,
 
@@ -41,11 +43,10 @@ pub struct Style {
     pub is_hidden: bool,
 
     /// Whether this style is struckthrough.
-    pub is_strikethrough: bool
+    pub is_strikethrough: bool,
 }
 
 impl Style {
-
     /// Creates a new Style with no properties set.
     ///
     /// # Examples
@@ -70,8 +71,9 @@ impl Style {
     /// let style = Style::new().bold();
     /// println!("{}", style.paint("hey"));
     /// ```
-    pub fn bold(&self) -> Style {
-        Style { is_bold: true, .. *self }
+    pub fn bold(mut self) -> Self {
+        self.is_bold = true;
+        self
     }
 
     /// Returns a `Style` with the dimmed property set.
@@ -84,8 +86,9 @@ impl Style {
     /// let style = Style::new().dimmed();
     /// println!("{}", style.paint("sup"));
     /// ```
-    pub fn dimmed(&self) -> Style {
-        Style { is_dimmed: true, .. *self }
+    pub fn dimmed(mut self) -> Self {
+        self.is_dimmed = true;
+        self
     }
 
     /// Returns a `Style` with the italic property set.
@@ -98,8 +101,9 @@ impl Style {
     /// let style = Style::new().italic();
     /// println!("{}", style.paint("greetings"));
     /// ```
-    pub fn italic(&self) -> Style {
-        Style { is_italic: true, .. *self }
+    pub fn italic(mut self) -> Self {
+        self.is_italic = true;
+        self
     }
 
     /// Returns a `Style` with the underline property set.
@@ -112,8 +116,9 @@ impl Style {
     /// let style = Style::new().underline();
     /// println!("{}", style.paint("salutations"));
     /// ```
-    pub fn underline(&self) -> Style {
-        Style { is_underline: true, .. *self }
+    pub fn underline(mut self) -> Self {
+        self.is_underline = true;
+        self
     }
 
     /// Returns a `Style` with the blink property set.
@@ -125,8 +130,9 @@ impl Style {
     /// let style = Style::new().blink();
     /// println!("{}", style.paint("wazzup"));
     /// ```
-    pub fn blink(&self) -> Style {
-        Style { is_blink: true, .. *self }
+    pub fn blink(mut self) -> Self {
+        self.is_blink = true;
+        self
     }
 
     /// Returns a `Style` with the reverse property set.
@@ -140,7 +146,10 @@ impl Style {
     /// println!("{}", style.paint("aloha"));
     /// ```
     pub fn reverse(&self) -> Style {
-        Style { is_reverse: true, .. *self }
+        Style {
+            is_reverse: true,
+            ..*self
+        }
     }
 
     /// Returns a `Style` with the hidden property set.
@@ -154,7 +163,10 @@ impl Style {
     /// println!("{}", style.paint("ahoy"));
     /// ```
     pub fn hidden(&self) -> Style {
-        Style { is_hidden: true, .. *self }
+        Style {
+            is_hidden: true,
+            ..*self
+        }
     }
 
     /// Returns a `Style` with the strikethrough property set.
@@ -168,7 +180,10 @@ impl Style {
     /// println!("{}", style.paint("yo"));
     /// ```
     pub fn strikethrough(&self) -> Style {
-        Style { is_strikethrough: true, .. *self }
+        Style {
+            is_strikethrough: true,
+            ..*self
+        }
     }
 
     /// Returns a `Style` with the foreground colour property set.
@@ -182,7 +197,10 @@ impl Style {
     /// println!("{}", style.paint("hi"));
     /// ```
     pub fn fg(&self, foreground: Colour) -> Style {
-        Style { foreground: Some(foreground), .. *self }
+        Style {
+            foreground: Some(foreground),
+            ..*self
+        }
     }
 
     /// Returns a `Style` with the background colour property set.
@@ -196,7 +214,10 @@ impl Style {
     /// println!("{}", style.paint("eyyyy"));
     /// ```
     pub fn on(&self, background: Colour) -> Style {
-        Style { background: Some(background), .. *self }
+        Style {
+            background: Some(background),
+            ..*self
+        }
     }
 
     /// Return true if this `Style` has no actual styles, and can be written
@@ -216,7 +237,6 @@ impl Style {
 }
 
 impl Default for Style {
-
     /// Returns a style with *no* properties set. Formatting text using this
     /// style returns the exact same text.
     ///
@@ -243,7 +263,6 @@ impl Default for Style {
     }
 }
 
-
 // ---- colours ----
 
 /// A colour is one specific type of ANSI escape code, and can refer
@@ -252,9 +271,11 @@ impl Default for Style {
 /// These use the standard numeric sequences.
 /// See <http://invisible-island.net/xterm/ctlseqs/ctlseqs.html>
 #[derive(PartialEq, Clone, Copy, Debug)]
-#[cfg_attr(feature = "derive_serde_style", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(
+    feature = "derive_serde_style",
+    derive(serde::Deserialize, serde::Serialize)
+)]
 pub enum Colour {
-
     /// Colour #0 (foreground code `30`, background code `40`).
     ///
     /// This is not necessarily the background colour, and using it as one may
@@ -307,9 +328,7 @@ pub enum Colour {
     RGB(u8, u8, u8),
 }
 
-
 impl Colour {
-
     /// Returns a `Style` with the foreground colour set to this colour.
     ///
     /// # Examples
@@ -321,7 +340,10 @@ impl Colour {
     /// println!("{}", style.paint("hi"));
     /// ```
     pub fn normal(self) -> Style {
-        Style { foreground: Some(self), .. Style::default() }
+        Style {
+            foreground: Some(self),
+            ..Style::default()
+        }
     }
 
     /// Returns a `Style` with the foreground colour set to this colour and the
@@ -336,7 +358,11 @@ impl Colour {
     /// println!("{}", style.paint("hey"));
     /// ```
     pub fn bold(self) -> Style {
-        Style { foreground: Some(self), is_bold: true, .. Style::default() }
+        Style {
+            foreground: Some(self),
+            is_bold: true,
+            ..Style::default()
+        }
     }
 
     /// Returns a `Style` with the foreground colour set to this colour and the
@@ -351,7 +377,11 @@ impl Colour {
     /// println!("{}", style.paint("sup"));
     /// ```
     pub fn dimmed(self) -> Style {
-        Style { foreground: Some(self), is_dimmed: true, .. Style::default() }
+        Style {
+            foreground: Some(self),
+            is_dimmed: true,
+            ..Style::default()
+        }
     }
 
     /// Returns a `Style` with the foreground colour set to this colour and the
@@ -366,7 +396,11 @@ impl Colour {
     /// println!("{}", style.paint("greetings"));
     /// ```
     pub fn italic(self) -> Style {
-        Style { foreground: Some(self), is_italic: true, .. Style::default() }
+        Style {
+            foreground: Some(self),
+            is_italic: true,
+            ..Style::default()
+        }
     }
 
     /// Returns a `Style` with the foreground colour set to this colour and the
@@ -381,7 +415,11 @@ impl Colour {
     /// println!("{}", style.paint("salutations"));
     /// ```
     pub fn underline(self) -> Style {
-        Style { foreground: Some(self), is_underline: true, .. Style::default() }
+        Style {
+            foreground: Some(self),
+            is_underline: true,
+            ..Style::default()
+        }
     }
 
     /// Returns a `Style` with the foreground colour set to this colour and the
@@ -396,7 +434,11 @@ impl Colour {
     /// println!("{}", style.paint("wazzup"));
     /// ```
     pub fn blink(self) -> Style {
-        Style { foreground: Some(self), is_blink: true, .. Style::default() }
+        Style {
+            foreground: Some(self),
+            is_blink: true,
+            ..Style::default()
+        }
     }
 
     /// Returns a `Style` with the foreground colour set to this colour and the
@@ -411,7 +453,11 @@ impl Colour {
     /// println!("{}", style.paint("aloha"));
     /// ```
     pub fn reverse(self) -> Style {
-        Style { foreground: Some(self), is_reverse: true, .. Style::default() }
+        Style {
+            foreground: Some(self),
+            is_reverse: true,
+            ..Style::default()
+        }
     }
 
     /// Returns a `Style` with the foreground colour set to this colour and the
@@ -426,7 +472,11 @@ impl Colour {
     /// println!("{}", style.paint("ahoy"));
     /// ```
     pub fn hidden(self) -> Style {
-        Style { foreground: Some(self), is_hidden: true, .. Style::default() }
+        Style {
+            foreground: Some(self),
+            is_hidden: true,
+            ..Style::default()
+        }
     }
 
     /// Returns a `Style` with the foreground colour set to this colour and the
@@ -441,7 +491,11 @@ impl Colour {
     /// println!("{}", style.paint("yo"));
     /// ```
     pub fn strikethrough(self) -> Style {
-        Style { foreground: Some(self), is_strikethrough: true, .. Style::default() }
+        Style {
+            foreground: Some(self),
+            is_strikethrough: true,
+            ..Style::default()
+        }
     }
 
     /// Returns a `Style` with the foreground colour set to this colour and the
@@ -456,12 +510,15 @@ impl Colour {
     /// println!("{}", style.paint("eyyyy"));
     /// ```
     pub fn on(self, background: Colour) -> Style {
-        Style { foreground: Some(self), background: Some(background), .. Style::default() }
+        Style {
+            foreground: Some(self),
+            background: Some(background),
+            ..Style::default()
+        }
     }
 }
 
 impl From<Colour> for Style {
-
     /// You can turn a `Colour` into a `Style` with the foreground colour set
     /// with the `From` trait.
     ///
@@ -480,11 +537,10 @@ impl From<Colour> for Style {
 #[cfg(test)]
 #[cfg(feature = "derive_serde_style")]
 mod serde_json_tests {
-    use super::{Style, Colour};
+    use super::{Colour, Style};
 
     #[test]
     fn colour_serialization() {
-
         let colours = &[
             Colour::Red,
             Colour::Blue,
@@ -492,7 +548,10 @@ mod serde_json_tests {
             Colour::Fixed(255),
         ];
 
-        assert_eq!(serde_json::to_string(&colours).unwrap(), String::from("[\"Red\",\"Blue\",{\"RGB\":[123,123,123]},{\"Fixed\":255}]"));
+        assert_eq!(
+            serde_json::to_string(&colours).unwrap(),
+            String::from("[\"Red\",\"Blue\",{\"RGB\":[123,123,123]},{\"Fixed\":255}]")
+        );
     }
 
     #[test]

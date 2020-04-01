@@ -1,17 +1,12 @@
 use style::{Colour, Style};
 
-use std::fmt;
-
-use write::AnyWrite;
-
+use std::fmt::{self, Display, Write};
 
 // ---- generating ANSI codes ----
 
 impl Style {
-
     /// Write any bytes that go *before* a piece of text to the given writer.
-    fn write_prefix<W: AnyWrite + ?Sized>(&self, f: &mut W) -> Result<(), W::Error> {
-
+    pub(crate) fn write_prefix(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // If there are actually no styles here, then don’t write *any* codes
         // as the prefix. An empty ANSI code may not affect the terminal
         // output at all, but a user may just want a code-free string.
@@ -21,311 +16,136 @@ impl Style {
 
         // Write the codes’ prefix, then write numbers, separated by
         // semicolons, for each text style we want to apply.
-        write!(f, "\x1B[")?;
+        f.write_str("\x1B[")?;
+
         let mut written_anything = false;
-
-        {
-            let mut write_char = |c| {
-                if written_anything { write!(f, ";")?; }
-                written_anything = true;
-                write!(f, "{}", c)?;
-                Ok(())
+        macro_rules! write_char {
+            ($cond:ident, $c:expr) => {
+                if self.$cond {
+                    if written_anything {
+                        f.write_char(';')?;
+                    } else {
+                        written_anything = true;
+                    }
+                    f.write_char($c)?;
+                }
             };
-
-            if self.is_bold           { write_char('1')? }
-            if self.is_dimmed         { write_char('2')? }
-            if self.is_italic         { write_char('3')? }
-            if self.is_underline      { write_char('4')? }
-            if self.is_blink          { write_char('5')? }
-            if self.is_reverse        { write_char('7')? }
-            if self.is_hidden         { write_char('8')? }
-            if self.is_strikethrough  { write_char('9')? }
         }
+        macro_rules! write_chars {
+            ($cond:ident => $c:expr) => { write_char!($cond, $c); };
+            ($cond:ident => $c:expr, $($t:tt)+) => {
+                write_char!($cond, $c);
+                write_chars!($($t)+);
+            };
+        }
+
+        write_chars!(
+            is_bold => '1',
+            is_dimmed => '2',
+            is_italic => '3',
+            is_underline => '4',
+            is_blink => '5',
+            is_reverse => '7',
+            is_hidden => '8',
+            is_strikethrough => '9'
+        );
 
         // The foreground and background colours, if specified, need to be
         // handled specially because the number codes are more complicated.
         // (see `write_background_code` and `write_foreground_code`)
         if let Some(bg) = self.background {
-            if written_anything { write!(f, ";")?; }
+            if written_anything {
+                f.write_char(';')?;
+            }
             written_anything = true;
             bg.write_background_code(f)?;
         }
 
         if let Some(fg) = self.foreground {
-            if written_anything { write!(f, ";")?; }
+            if written_anything {
+                f.write_char(';')?;
+            }
             fg.write_foreground_code(f)?;
         }
 
         // All the codes end with an `m`, because reasons.
-        write!(f, "m")?;
-
-        Ok(())
+        f.write_char('m')
     }
 
     /// Write any bytes that go *after* a piece of text to the given writer.
-    fn write_suffix<W: AnyWrite + ?Sized>(&self, f: &mut W) -> Result<(), W::Error> {
+    pub(crate) fn write_suffix(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.is_plain() {
             Ok(())
-        }
-        else {
-            write!(f, "{}", RESET)
+        } else {
+            f.write_str(RESET)
         }
     }
 }
-
 
 /// The code to send to reset all styles and return to `Style::default()`.
 pub static RESET: &str = "\x1B[0m";
 
-
-
 impl Colour {
-    fn write_foreground_code<W: AnyWrite + ?Sized>(&self, f: &mut W) -> Result<(), W::Error> {
-        match *self {
-            Colour::Black      => write!(f, "30"),
-            Colour::Red        => write!(f, "31"),
-            Colour::Green      => write!(f, "32"),
-            Colour::Yellow     => write!(f, "33"),
-            Colour::Blue       => write!(f, "34"),
-            Colour::Purple     => write!(f, "35"),
-            Colour::Cyan       => write!(f, "36"),
-            Colour::White      => write!(f, "37"),
-            Colour::Fixed(num) => write!(f, "38;5;{}", &num),
-            Colour::RGB(r,g,b) => write!(f, "38;2;{};{};{}", &r, &g, &b),
+    fn write_foreground_code(self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Colour::Black => f.write_str("30"),
+            Colour::Red => f.write_str("31"),
+            Colour::Green => f.write_str("32"),
+            Colour::Yellow => f.write_str("33"),
+            Colour::Blue => f.write_str("34"),
+            Colour::Purple => f.write_str("35"),
+            Colour::Cyan => f.write_str("36"),
+            Colour::White => f.write_str("37"),
+            Colour::Fixed(num) => {
+                f.write_str("38;5;")?;
+                num.fmt(f)
+            }
+            Colour::RGB(r, g, b) => {
+                f.write_str("38;2;")?;
+                r.fmt(f)?;
+                f.write_char(';')?;
+                g.fmt(f)?;
+                f.write_char(';')?;
+                b.fmt(f)
+            }
         }
     }
 
-    fn write_background_code<W: AnyWrite + ?Sized>(&self, f: &mut W) -> Result<(), W::Error> {
-        match *self {
-            Colour::Black      => write!(f, "40"),
-            Colour::Red        => write!(f, "41"),
-            Colour::Green      => write!(f, "42"),
-            Colour::Yellow     => write!(f, "43"),
-            Colour::Blue       => write!(f, "44"),
-            Colour::Purple     => write!(f, "45"),
-            Colour::Cyan       => write!(f, "46"),
-            Colour::White      => write!(f, "47"),
-            Colour::Fixed(num) => write!(f, "48;5;{}", &num),
-            Colour::RGB(r,g,b) => write!(f, "48;2;{};{};{}", &r, &g, &b),
+    fn write_background_code(self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Colour::Black => f.write_str("40"),
+            Colour::Red => f.write_str("41"),
+            Colour::Green => f.write_str("42"),
+            Colour::Yellow => f.write_str("43"),
+            Colour::Blue => f.write_str("44"),
+            Colour::Purple => f.write_str("45"),
+            Colour::Cyan => f.write_str("46"),
+            Colour::White => f.write_str("47"),
+            Colour::Fixed(num) => {
+                f.write_str("48;5;")?;
+                num.fmt(f)
+            }
+            Colour::RGB(r, g, b) => {
+                f.write_str("48;2;")?;
+                r.fmt(f)?;
+                f.write_char(';')?;
+                g.fmt(f)?;
+                f.write_char(';')?;
+                b.fmt(f)
+            }
         }
     }
 }
-
-
-/// Like `ANSIString`, but only displays the style prefix.
-///
-/// This type implements the `Display` trait, meaning it can be written to a
-/// `std::fmt` formatting without doing any extra allocation, and written to a
-/// string with the `.to_string()` method. For examples, see
-/// [`Style::prefix`](struct.Style.html#method.prefix).
-#[derive(Clone, Copy, Debug)]
-pub struct Prefix(Style);
-
-/// Like `ANSIString`, but only displays the difference between two
-/// styles.
-///
-/// This type implements the `Display` trait, meaning it can be written to a
-/// `std::fmt` formatting without doing any extra allocation, and written to a
-/// string with the `.to_string()` method. For examples, see
-/// [`Style::infix`](struct.Style.html#method.infix).
-#[derive(Clone, Copy, Debug)]
-pub struct Infix(Style, Style);
-
-/// Like `ANSIString`, but only displays the style suffix.
-///
-/// This type implements the `Display` trait, meaning it can be written to a
-/// `std::fmt` formatting without doing any extra allocation, and written to a
-/// string with the `.to_string()` method. For examples, see
-/// [`Style::suffix`](struct.Style.html#method.suffix).
-#[derive(Clone, Copy, Debug)]
-pub struct Suffix(Style);
-
-
-impl Style {
-
-    /// The prefix bytes for this style. These are the bytes that tell the
-    /// terminal to use a different colour or font style.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use ansi_term::{Style, Colour::Blue};
-    ///
-    /// let style = Style::default().bold();
-    /// assert_eq!("\x1b[1m",
-    ///            style.prefix().to_string());
-    ///
-    /// let style = Blue.bold();
-    /// assert_eq!("\x1b[1;34m",
-    ///            style.prefix().to_string());
-    ///
-    /// let style = Style::default();
-    /// assert_eq!("",
-    ///            style.prefix().to_string());
-    /// ```
-    pub fn prefix(self) -> Prefix {
-        Prefix(self)
-    }
-
-    /// The infix bytes between this style and `next` style. These are the bytes
-    /// that tell the terminal to change the style to `next`. These may include
-    /// a reset followed by the next colour and style, depending on the two styles.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use ansi_term::{Style, Colour::Green};
-    ///
-    /// let style = Style::default().bold();
-    /// assert_eq!("\x1b[32m",
-    ///            style.infix(Green.bold()).to_string());
-    ///
-    /// let style = Green.normal();
-    /// assert_eq!("\x1b[1m",
-    ///            style.infix(Green.bold()).to_string());
-    ///
-    /// let style = Style::default();
-    /// assert_eq!("",
-    ///            style.infix(style).to_string());
-    /// ```
-    pub fn infix(self, next: Style) -> Infix {
-        Infix(self, next)
-    }
-
-    /// The suffix for this style. These are the bytes that tell the terminal
-    /// to reset back to its normal colour and font style.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use ansi_term::{Style, Colour::Green};
-    ///
-    /// let style = Style::default().bold();
-    /// assert_eq!("\x1b[0m",
-    ///            style.suffix().to_string());
-    ///
-    /// let style = Green.normal().bold();
-    /// assert_eq!("\x1b[0m",
-    ///            style.suffix().to_string());
-    ///
-    /// let style = Style::default();
-    /// assert_eq!("",
-    ///            style.suffix().to_string());
-    /// ```
-    pub fn suffix(self) -> Suffix {
-        Suffix(self)
-    }
-}
-
-
-impl Colour {
-
-    /// The prefix bytes for this colour as a `Style`. These are the bytes
-    /// that tell the terminal to use a different colour or font style.
-    ///
-    /// See also [`Style::prefix`](struct.Style.html#method.prefix).
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use ansi_term::Colour::Green;
-    ///
-    /// assert_eq!("\x1b[0m",
-    ///            Green.suffix().to_string());
-    /// ```
-    pub fn prefix(self) -> Prefix {
-        Prefix(self.normal())
-    }
-
-    /// The infix bytes between this colour and `next` colour. These are the bytes
-    /// that tell the terminal to use the `next` colour, or to do nothing if
-    /// the two colours are equal.
-    ///
-    /// See also [`Style::infix`](struct.Style.html#method.infix).
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use ansi_term::Colour::{Red, Yellow};
-    ///
-    /// assert_eq!("\x1b[33m",
-    ///            Red.infix(Yellow).to_string());
-    /// ```
-    pub fn infix(self, next: Colour) -> Infix {
-        Infix(self.normal(), next.normal())
-    }
-
-    /// The suffix for this colour as a `Style`. These are the bytes that
-    /// tell the terminal to reset back to its normal colour and font style.
-    ///
-    /// See also [`Style::suffix`](struct.Style.html#method.suffix).
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use ansi_term::Colour::Purple;
-    ///
-    /// assert_eq!("\x1b[0m",
-    ///            Purple.suffix().to_string());
-    /// ```
-    pub fn suffix(self) -> Suffix {
-        Suffix(self.normal())
-    }
-}
-
-
-impl fmt::Display for Prefix {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let f: &mut fmt::Write = f;
-        self.0.write_prefix(f)
-    }
-}
-
-
-impl fmt::Display for Infix {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        use difference::Difference;
-
-        match Difference::between(&self.0, &self.1) {
-            Difference::ExtraStyles(style) => {
-                let f: &mut fmt::Write = f;
-                style.write_prefix(f)
-            },
-            Difference::Reset => {
-                let f: &mut fmt::Write = f;
-                write!(f, "{}{}", RESET, self.1.prefix())
-            },
-            Difference::NoDifference => {
-                Ok(())   // nothing to write
-            },
-        }
-    }
-}
-
-
-impl fmt::Display for Suffix {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let f: &mut fmt::Write = f;
-        self.0.write_suffix(f)
-    }
-}
-
-
 
 #[cfg(test)]
 mod test {
-    use style::Style;
-    use style::Colour::*;
+    use style::{Colour::*, Style};
 
     macro_rules! test {
         ($name: ident: $style: expr; $input: expr => $result: expr) => {
             #[test]
             fn $name() {
                 assert_eq!($style.paint($input).to_string(), $result.to_string());
-
-                let mut v = Vec::new();
-                $style.paint($input.as_bytes()).write_to(&mut v).unwrap();
-                assert_eq!(v.as_slice(), $result.as_bytes());
             }
         };
     }
@@ -362,13 +182,4 @@ mod test {
     test!(reverse:               Style::new().reverse();            "hi" => "\x1B[7mhi\x1B[0m");
     test!(hidden:                Style::new().hidden();             "hi" => "\x1B[8mhi\x1B[0m");
     test!(stricken:              Style::new().strikethrough();      "hi" => "\x1B[9mhi\x1B[0m");
-
-    #[test]
-    fn test_infix() {
-        assert_eq!(Style::new().dimmed().infix(Style::new()).to_string(), "\x1B[0m");
-        assert_eq!(White.dimmed().infix(White.normal()).to_string(), "\x1B[0m\x1B[37m");
-        assert_eq!(White.normal().infix(White.bold()).to_string(), "\x1B[1m");
-        assert_eq!(White.normal().infix(Blue.normal()).to_string(), "\x1B[34m");
-        assert_eq!(Blue.bold().infix(Blue.bold()).to_string(), "");
-    }
 }
