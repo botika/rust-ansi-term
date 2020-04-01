@@ -221,8 +221,8 @@ impl Style {
     /// assert_eq!(true,  Style::default().is_plain());
     /// assert_eq!(false, Style::default().bold().is_plain());
     /// ```
-    pub fn is_plain(self) -> bool {
-        self == Style::default()
+    pub fn is_plain(&self) -> bool {
+        *self == Style::default()
     }
 }
 
