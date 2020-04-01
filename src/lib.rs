@@ -1,3 +1,7 @@
+//! > Adapted from [`rust-ansi-term`](https://github.com/ogham/rust-ansi-term)
+//! >
+//! > Refactor for use [`fmt::Display`](https://doc.rust-lang.org/std/fmt/trait.Display.html)
+//! and `FnOnce(&mut fmt::Formatter) -> fmt::Result`
 //! This is a library for controlling colours and formatting, such as
 //! red bold text or blue underlined text, on ANSI terminals.
 //!
@@ -19,7 +23,7 @@
 //! here’s how to get some red text:
 //!
 //! ```
-//! use ansi_term::Colour::Red;
+//! use yansi_term::Colour::Red;
 //!
 //! println!("This is in red: {}", Red.paint("a red string"));
 //! ```
@@ -28,7 +32,7 @@
 //! string with the ANSI control characters surrounding it. Instead, it returns
 //! that has a [`Display`] implementation that, when formatted, returns the characters.
 //! ```
-//! use ansi_term::Colour::Red;
+//! use yansi_term::Colour::Red;
 //!
 //! let red_string = Red.paint("a red string").to_string();
 //! ```
@@ -43,7 +47,7 @@
 //! property set. For example:
 //!
 //! ```
-//! use ansi_term::Style;
+//! use yansi_term::Style;
 //!
 //! println!("How about some {} and {}?",
 //!          Style::new().bold().paint("bold"),
@@ -55,7 +59,7 @@
 //! an empty `Style` value:
 //!
 //! ```
-//! use ansi_term::Colour::{Blue, Yellow};
+//! use yansi_term::Colour::{Blue, Yellow};
 //!
 //! println!("Demonstrating {} and {}!",
 //!          Blue.bold().paint("blue bold"),
@@ -73,8 +77,8 @@
 //! You can do this using the [`fg`] method:
 //!
 //! ```
-//! use ansi_term::Style;
-//! use ansi_term::Colour::{Blue, Cyan, Yellow};
+//! use yansi_term::Style;
+//! use yansi_term::Colour::{Blue, Cyan, Yellow};
 //!
 //! println!("Yellow on blue: {}", Style::new().on(Blue).fg(Yellow).paint("yow!"));
 //! println!("Also yellow on blue: {}", Cyan.on(Blue).fg(Yellow).paint("zow!"));
@@ -89,8 +93,8 @@
 //! want to have a style with *nothing* set.
 //!
 //! ```
-//! use ansi_term::Style;
-//! use ansi_term::Colour::Red;
+//! use yansi_term::Style;
+//! use yansi_term::Colour::Red;
 //!
 //! Red.normal().paint("yet another red string");
 //! Style::default().paint("a completely regular string");
@@ -104,7 +108,7 @@
 //! included wherever you would use a `Colour`:
 //!
 //! ```
-//! use ansi_term::Colour::Fixed;
+//! use yansi_term::Colour::Fixed;
 //!
 //! Fixed(134).paint("A sort of light purple");
 //! Fixed(221).on(Fixed(124)).paint("Mustard in the ketchup");
@@ -119,7 +123,7 @@
 //! which takes separate `u8` arguments for red, green, and blue:
 //!
 //! ```
-//! use ansi_term::Colour::RGB;
+//! use yansi_term::Colour::RGB;
 //!
 //! RGB(70, 130, 180).paint("Steel blue");
 //! ```
@@ -142,14 +146,6 @@
 //! [`fg`]: struct.Style.html#method.fg
 //! [`on`]: struct.Style.html#method.on
 
-#![crate_name = "ansi_term"]
-#![crate_type = "rlib"]
-#![crate_type = "dylib"]
-#![warn(missing_copy_implementations)]
-#![warn(missing_docs)]
-#![warn(trivial_casts, trivial_numeric_casts)]
-#![warn(unused_extern_crates, unused_qualifications)]
-
 #[cfg(target_os = "windows")]
 extern crate winapi;
 #[cfg(test)]
@@ -170,5 +166,3 @@ mod display;
 
 mod windows;
 pub use windows::*;
-
-mod debug;

@@ -2,10 +2,9 @@ use style::{Colour, Style};
 
 use std::fmt::{self, Display, Write};
 
-// ---- generating ANSI codes ----
-
 impl Style {
     /// Write any bytes that go *before* a piece of text to the given writer.
+    #[inline]
     pub(crate) fn write_prefix(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // If there are actually no styles here, then don’t write *any* codes
         // as the prefix. An empty ANSI code may not affect the terminal
@@ -73,6 +72,7 @@ impl Style {
     }
 
     /// Write any bytes that go *after* a piece of text to the given writer.
+    #[inline]
     pub(crate) fn write_suffix(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.is_plain() {
             Ok(())
@@ -86,21 +86,23 @@ impl Style {
 pub static RESET: &str = "\x1B[0m";
 
 impl Colour {
+    #[inline]
     fn write_foreground_code(self, f: &mut fmt::Formatter) -> fmt::Result {
+        use Colour::*;
         match self {
-            Colour::Black => f.write_str("30"),
-            Colour::Red => f.write_str("31"),
-            Colour::Green => f.write_str("32"),
-            Colour::Yellow => f.write_str("33"),
-            Colour::Blue => f.write_str("34"),
-            Colour::Purple => f.write_str("35"),
-            Colour::Cyan => f.write_str("36"),
-            Colour::White => f.write_str("37"),
-            Colour::Fixed(num) => {
+            Black => f.write_str("30"),
+            Red => f.write_str("31"),
+            Green => f.write_str("32"),
+            Yellow => f.write_str("33"),
+            Blue => f.write_str("34"),
+            Purple => f.write_str("35"),
+            Cyan => f.write_str("36"),
+            White => f.write_str("37"),
+            Fixed(num) => {
                 f.write_str("38;5;")?;
                 num.fmt(f)
             }
-            Colour::RGB(r, g, b) => {
+            RGB(r, g, b) => {
                 f.write_str("38;2;")?;
                 r.fmt(f)?;
                 f.write_char(';')?;
@@ -111,21 +113,23 @@ impl Colour {
         }
     }
 
+    #[inline]
     fn write_background_code(self, f: &mut fmt::Formatter) -> fmt::Result {
+        use Colour::*;
         match self {
-            Colour::Black => f.write_str("40"),
-            Colour::Red => f.write_str("41"),
-            Colour::Green => f.write_str("42"),
-            Colour::Yellow => f.write_str("43"),
-            Colour::Blue => f.write_str("44"),
-            Colour::Purple => f.write_str("45"),
-            Colour::Cyan => f.write_str("46"),
-            Colour::White => f.write_str("47"),
-            Colour::Fixed(num) => {
+            Black => f.write_str("40"),
+            Red => f.write_str("41"),
+            Green => f.write_str("42"),
+            Yellow => f.write_str("43"),
+            Blue => f.write_str("44"),
+            Purple => f.write_str("45"),
+            Cyan => f.write_str("46"),
+            White => f.write_str("47"),
+            Fixed(num) => {
                 f.write_str("48;5;")?;
                 num.fmt(f)
             }
-            Colour::RGB(r, g, b) => {
+            RGB(r, g, b) => {
                 f.write_str("48;2;")?;
                 r.fmt(f)?;
                 f.write_char(';')?;

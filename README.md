@@ -1,4 +1,4 @@
-# yansi-term 
+# yansi-term [![Latest version](https://img.shields.io/crates/v/yansi-term.svg)](https://crates.io/crates/yansi-term) [![Build Status](https://travis-ci.org/botika/yansi-term.svg?branch=master)](https://travis-ci.org/botika/yansi-term)
 > Adapted from [`rust-ansi-term`](https://github.com/ogham/rust-ansi-term)
 >
 > Refactor for use [`fmt::Display`](https://doc.rust-lang.org/std/fmt/trait.Display.html) and `FnOnce(&mut fmt::Formatter) -> fmt::Result` 
@@ -6,7 +6,7 @@
 
 This is a library for controlling colours and formatting, such as red bold text or blue underlined text, on ANSI terminals.
 
-### [View the Rustdoc](https://docs.rs/ansi_term/)
+### [View the Rustdoc](https://docs.rs/yansi-term)
 
 
 # Installation
@@ -15,7 +15,7 @@ This crate works with [Cargo](http://crates.io). Add the following to your `Carg
 
 ```toml
 [dependencies]
-ansi_term = "0.12"
+yansi-term = "0.1"
 ```
 
 
@@ -33,7 +33,7 @@ To format a string, call the `paint` method on a `Style` or a `Colour`, passing 
 For example, here’s how to get some red text:
 
 ```rust
-use ansi_term::Colour::Red;
+use yansi_term::Colour::Red;
 
 println!("This is in red: {}", Red.paint("a red string"));
 ```
@@ -45,7 +45,7 @@ This allows strings to be printed with a minimum of `String` allocations being p
 If you *do* want to get at the escape codes, then you can convert the `ANSIString` to a string as you would any other `Display` value:
 
 ```rust
-use ansi_term::Colour::Red;
+use yansi_term::Colour::Red;
 
 let red_string = Red.paint("a red string").to_string();
 ```
@@ -53,7 +53,7 @@ let red_string = Red.paint("a red string").to_string();
 **Note for Windows 10 users:** On Windows 10, the application must enable ANSI support first:
 
 ```rust,ignore
-let enabled = ansi_term::enable_ansi_support();
+let enabled = yansi_term::enable_ansi_support();
 ```
 
 ## Bold, underline, background, and other styles
@@ -64,7 +64,7 @@ Each method creates a new style that has that specific property set.
 For example:
 
 ```rust
-use ansi_term::Style;
+use yansi_term::Style;
 
 println!("How about some {} and {}?",
          Style::new().bold().paint("bold"),
@@ -74,7 +74,7 @@ println!("How about some {} and {}?",
 For brevity, these methods have also been implemented for `Colour` values, so you can give your styles a foreground colour without having to begin with an empty `Style` value:
 
 ```rust
-use ansi_term::Colour::{Blue, Yellow};
+use yansi_term::Colour::{Blue, Yellow};
 
 println!("Demonstrating {} and {}!",
          Blue.bold().paint("blue bold"),
@@ -90,8 +90,8 @@ In some cases, you may find it easier to change the foreground on an existing `S
 You can do this using the `fg` method:
 
 ```rust
-use ansi_term::Style;
-use ansi_term::Colour::{Blue, Cyan, Yellow};
+use yansi_term::Style;
+use yansi_term::Colour::{Blue, Cyan, Yellow};
 
 println!("Yellow on blue: {}", Style::new().on(Blue).fg(Yellow).paint("yow!"));
 println!("Also yellow on blue: {}", Cyan.on(Blue).fg(Yellow).paint("zow!"));
@@ -101,8 +101,8 @@ You can turn a `Colour` into a `Style` with the `normal` method.
 This will produce the exact same `ANSIString` as if you just used the `paint` method on the `Colour` directly, but it’s useful in certain cases: for example, you may have a method that returns `Styles`, and need to represent both the “red bold” and “red, but not bold” styles with values of the same type. The `Style` struct also has a `Default` implementation if you want to have a style with *nothing* set.
 
 ```rust
-use ansi_term::Style;
-use ansi_term::Colour::Red;
+use yansi_term::Style;
+use yansi_term::Colour::Red;
 
 Red.normal().paint("yet another red string");
 Style::default().paint("a completely regular string");
@@ -115,7 +115,7 @@ You can access the extended range of 256 colours by using the `Colour::Fixed` va
 This can be included wherever you would use a `Colour`:
 
 ```rust
-use ansi_term::Colour::Fixed;
+use yansi_term::Colour::Fixed;
 
 Fixed(134).paint("A sort of light purple");
 Fixed(221).on(Fixed(124)).paint("Mustard in the ketchup");
@@ -127,7 +127,7 @@ There’s nothing stopping you from using these as `Fixed` colours instead, but 
 You can also access full 24-bit colour by using the `Colour::RGB` variant, which takes separate `u8` arguments for red, green, and blue:
 
 ```rust
-use ansi_term::Colour::RGB;
+use yansi_term::Colour::RGB;
 
 RGB(70, 130, 180).paint("Steel blue");
 ```

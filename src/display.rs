@@ -45,7 +45,7 @@ impl Colour {
     /// to get blue text.
     ///
     /// ```
-    /// use ansi_term::Colour::Blue;
+    /// use yansi_term::Colour::Blue;
     /// println!("{}", Blue.paint("da ba dee"));
     /// ```
     #[inline]

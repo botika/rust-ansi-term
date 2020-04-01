@@ -1,23 +1,28 @@
 [package]
-name = "ansi_term"
+name = "yansi-term"
 description = "Library for ANSI terminal colours and styles (bold, underline)"
-
-authors = [ "ogham@bsago.me", "Ryan Scheel (Havvy) <ryan.havvy@gmail.com>", "Josh Triplett <josh@joshtriplett.org>" ]
-documentation = "https://docs.rs/ansi_term"
-homepage = "https://github.com/ogham/rust-ansi-term"
+authors = [
+    "ogham@bsago.me",
+    "Ryan Scheel (Havvy) <ryan.havvy@gmail.com>",
+    "Josh Triplett <josh@joshtriplett.org>",
+    "Juan Aguilar Santillana <mhpoin@gmail.com>"
+]
+documentation = "https://docs.rs/yansi-term"
+homepage = "https://github.com/botika/yansi-term"
 license = "MIT"
 readme = "README.md"
-version = "0.12.1"
-repository = "https://github.com/ogham/rust-ansi-term"
+version = "0.1.0"
+repository = "https://github.com/botika/yansi-term"
 
-[lib]
-name = "ansi_term"
+[badges]
+travis-ci = { repository = "botika/yansi-term", branch = "master" }
+maintenance = { status = "actively-developed" }
 
 [features]
 derive_serde_style = ["serde"]
 
 [dependencies.serde]
-version = "1.0.90"
+version = "1.0"
 features = ["derive"]
 optional = true
 
@@ -27,7 +32,5 @@ features = ["consoleapi", "errhandlingapi", "fileapi", "handleapi", "processenv"
 
 [dev-dependencies]
 doc-comment = "0.3"
-regex = "1.1.9"
-
-[dev-dependencies.serde_json]
-version = "1.0.39"
+regex = "1.1"
+serde_json = "1.0"

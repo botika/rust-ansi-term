@@ -1,5 +1,5 @@
-extern crate ansi_term;
-use ansi_term::{Colour, Style};
+extern crate yansi_term;
+use yansi_term::{Colour, Style};
 
 // This example prints out a colour gradient in a grid by calculating each
 // character’s red, green, and blue components, and using 24-bit colour codes
@@ -18,6 +18,6 @@ fn main() {
             print!("{}", Style::default().on(Colour::RGB(r, g, b)).paint(" "));
         }
 
-        print!("\n");
+        println!();
     }
 }

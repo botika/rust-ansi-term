@@ -4,12 +4,12 @@
 /// # Examples
 ///
 /// ```
-/// use ansi_term::{Style, Colour};
+/// use yansi_term::{Style, Colour};
 ///
 /// let style = Style::new().bold().on(Colour::Black);
 /// println!("{}", style.paint("Bold on black"));
 /// ```
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy, Default, Debug)]
 #[cfg_attr(
     feature = "derive_serde_style",
     derive(serde::Deserialize, serde::Serialize)
@@ -52,7 +52,7 @@ impl Style {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::Style;
+    /// use yansi_term::Style;
     ///
     /// let style = Style::new();
     /// println!("{}", style.paint("hi"));
@@ -66,7 +66,7 @@ impl Style {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::Style;
+    /// use yansi_term::Style;
     ///
     /// let style = Style::new().bold();
     /// println!("{}", style.paint("hey"));
@@ -81,7 +81,7 @@ impl Style {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::Style;
+    /// use yansi_term::Style;
     ///
     /// let style = Style::new().dimmed();
     /// println!("{}", style.paint("sup"));
@@ -96,7 +96,7 @@ impl Style {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::Style;
+    /// use yansi_term::Style;
     ///
     /// let style = Style::new().italic();
     /// println!("{}", style.paint("greetings"));
@@ -111,7 +111,7 @@ impl Style {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::Style;
+    /// use yansi_term::Style;
     ///
     /// let style = Style::new().underline();
     /// println!("{}", style.paint("salutations"));
@@ -125,7 +125,7 @@ impl Style {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::Style;
+    /// use yansi_term::Style;
     ///
     /// let style = Style::new().blink();
     /// println!("{}", style.paint("wazzup"));
@@ -140,16 +140,14 @@ impl Style {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::Style;
+    /// use yansi_term::Style;
     ///
     /// let style = Style::new().reverse();
     /// println!("{}", style.paint("aloha"));
     /// ```
-    pub fn reverse(&self) -> Style {
-        Style {
-            is_reverse: true,
-            ..*self
-        }
+    pub fn reverse(mut self) -> Self {
+        self.is_reverse = true;
+        self
     }
 
     /// Returns a `Style` with the hidden property set.
@@ -157,16 +155,14 @@ impl Style {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::Style;
+    /// use yansi_term::Style;
     ///
     /// let style = Style::new().hidden();
     /// println!("{}", style.paint("ahoy"));
     /// ```
-    pub fn hidden(&self) -> Style {
-        Style {
-            is_hidden: true,
-            ..*self
-        }
+    pub fn hidden(mut self) -> Self {
+        self.is_hidden = true;
+        self
     }
 
     /// Returns a `Style` with the strikethrough property set.
@@ -174,16 +170,14 @@ impl Style {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::Style;
+    /// use yansi_term::Style;
     ///
     /// let style = Style::new().strikethrough();
     /// println!("{}", style.paint("yo"));
     /// ```
-    pub fn strikethrough(&self) -> Style {
-        Style {
-            is_strikethrough: true,
-            ..*self
-        }
+    pub fn strikethrough(mut self) -> Self {
+        self.is_strikethrough = true;
+        self
     }
 
     /// Returns a `Style` with the foreground colour property set.
@@ -191,16 +185,14 @@ impl Style {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::{Style, Colour};
+    /// use yansi_term::{Style, Colour};
     ///
     /// let style = Style::new().fg(Colour::Yellow);
     /// println!("{}", style.paint("hi"));
     /// ```
-    pub fn fg(&self, foreground: Colour) -> Style {
-        Style {
-            foreground: Some(foreground),
-            ..*self
-        }
+    pub fn fg(mut self, foreground: Colour) -> Self {
+        self.foreground = Some(foreground);
+        self
     }
 
     /// Returns a `Style` with the background colour property set.
@@ -208,16 +200,14 @@ impl Style {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::{Style, Colour};
+    /// use yansi_term::{Style, Colour};
     ///
     /// let style = Style::new().on(Colour::Blue);
     /// println!("{}", style.paint("eyyyy"));
     /// ```
-    pub fn on(&self, background: Colour) -> Style {
-        Style {
-            background: Some(background),
-            ..*self
-        }
+    pub fn on(mut self, background: Colour) -> Self {
+        self.background = Some(background);
+        self
     }
 
     /// Return true if this `Style` has no actual styles, and can be written
@@ -226,7 +216,7 @@ impl Style {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::Style;
+    /// use yansi_term::Style;
     ///
     /// assert_eq!(true,  Style::default().is_plain());
     /// assert_eq!(false, Style::default().bold().is_plain());
@@ -235,35 +225,6 @@ impl Style {
         self == Style::default()
     }
 }
-
-impl Default for Style {
-    /// Returns a style with *no* properties set. Formatting text using this
-    /// style returns the exact same text.
-    ///
-    /// ```
-    /// use ansi_term::Style;
-    /// assert_eq!(None,  Style::default().foreground);
-    /// assert_eq!(None,  Style::default().background);
-    /// assert_eq!(false, Style::default().is_bold);
-    /// assert_eq!("txt", Style::default().paint("txt").to_string());
-    /// ```
-    fn default() -> Style {
-        Style {
-            foreground: None,
-            background: None,
-            is_bold: false,
-            is_dimmed: false,
-            is_italic: false,
-            is_underline: false,
-            is_blink: false,
-            is_reverse: false,
-            is_hidden: false,
-            is_strikethrough: false,
-        }
-    }
-}
-
-// ---- colours ----
 
 /// A colour is one specific type of ANSI escape code, and can refer
 /// to either the foreground or background colour.
@@ -334,7 +295,7 @@ impl Colour {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::Colour;
+    /// use yansi_term::Colour;
     ///
     /// let style = Colour::Red.normal();
     /// println!("{}", style.paint("hi"));
@@ -352,7 +313,7 @@ impl Colour {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::Colour;
+    /// use yansi_term::Colour;
     ///
     /// let style = Colour::Green.bold();
     /// println!("{}", style.paint("hey"));
@@ -371,7 +332,7 @@ impl Colour {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::Colour;
+    /// use yansi_term::Colour;
     ///
     /// let style = Colour::Yellow.dimmed();
     /// println!("{}", style.paint("sup"));
@@ -390,7 +351,7 @@ impl Colour {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::Colour;
+    /// use yansi_term::Colour;
     ///
     /// let style = Colour::Blue.italic();
     /// println!("{}", style.paint("greetings"));
@@ -409,7 +370,7 @@ impl Colour {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::Colour;
+    /// use yansi_term::Colour;
     ///
     /// let style = Colour::Purple.underline();
     /// println!("{}", style.paint("salutations"));
@@ -428,7 +389,7 @@ impl Colour {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::Colour;
+    /// use yansi_term::Colour;
     ///
     /// let style = Colour::Cyan.blink();
     /// println!("{}", style.paint("wazzup"));
@@ -447,7 +408,7 @@ impl Colour {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::Colour;
+    /// use yansi_term::Colour;
     ///
     /// let style = Colour::Black.reverse();
     /// println!("{}", style.paint("aloha"));
@@ -466,7 +427,7 @@ impl Colour {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::Colour;
+    /// use yansi_term::Colour;
     ///
     /// let style = Colour::White.hidden();
     /// println!("{}", style.paint("ahoy"));
@@ -485,7 +446,7 @@ impl Colour {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::Colour;
+    /// use yansi_term::Colour;
     ///
     /// let style = Colour::Fixed(244).strikethrough();
     /// println!("{}", style.paint("yo"));
@@ -504,7 +465,7 @@ impl Colour {
     /// # Examples
     ///
     /// ```
-    /// use ansi_term::Colour;
+    /// use yansi_term::Colour;
     ///
     /// let style = Colour::RGB(31, 31, 31).on(Colour::White);
     /// println!("{}", style.paint("eyyyy"));
@@ -523,7 +484,7 @@ impl From<Colour> for Style {
     /// with the `From` trait.
     ///
     /// ```
-    /// use ansi_term::{Style, Colour};
+    /// use yansi_term::{Style, Colour};
     /// let green_foreground = Style::default().fg(Colour::Green);
     /// assert_eq!(green_foreground, Colour::Green.normal());
     /// assert_eq!(green_foreground, Colour::Green.into());
@@ -563,7 +524,7 @@ mod serde_json_tests {
             Colour::Fixed(255),
         ];
 
-        for colour in colours.into_iter() {
+        for colour in colours {
             let serialized = serde_json::to_string(&colour).unwrap();
             let deserialized: Colour = serde_json::from_str(&serialized).unwrap();
 

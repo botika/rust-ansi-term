@@ -1,5 +1,5 @@
-extern crate ansi_term;
-use ansi_term::Colour;
+extern crate yansi_term;
+use yansi_term::Colour;
 
 // This example prints out the 256 colours.
 // They're arranged like this:
@@ -15,12 +15,12 @@ fn main() {
         glow(c, c != 0);
         print!(" ");
     }
-    print!("\n");
+    println!();
     for c in 8..16 {
         glow(c, c != 8);
         print!(" ");
     }
-    print!("\n\n");
+    println!("\n");
 
     // Six lines of the first three squares
     for row in 0..6 {
@@ -33,9 +33,9 @@ fn main() {
             print!("  ");
         }
 
-        print!("\n");
+        println!();
     }
-    print!("\n");
+    println!();
 
     // Six more lines of the other three squares
     for row in 0..6 {
@@ -48,21 +48,21 @@ fn main() {
             print!("  ");
         }
 
-        print!("\n");
+        println!();
     }
-    print!("\n");
+    println!();
 
     // The last greyscale lines
     for c in 232..=243 {
         glow(c, false);
         print!(" ");
     }
-    print!("\n");
+    println!();
     for c in 244..=255 {
         glow(c, true);
         print!(" ");
     }
-    print!("\n");
+    println!();
 }
 
 fn glow(c: u8, light_bg: bool) {
