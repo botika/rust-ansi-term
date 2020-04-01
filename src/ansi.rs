@@ -186,4 +186,120 @@ mod test {
     test!(reverse:               Style::new().reverse();            "hi" => "\x1B[7mhi\x1B[0m");
     test!(hidden:                Style::new().hidden();             "hi" => "\x1B[8mhi\x1B[0m");
     test!(stricken:              Style::new().strikethrough();      "hi" => "\x1B[9mhi\x1B[0m");
+
+    macro_rules! test_fn {
+        ($name:ident: $style:expr; $result:expr) => {
+            #[test]
+            fn $name() {
+                let string = String::from("hi");
+                let string: &str = &string;
+                assert_eq!(
+                    $style.paint_fn(|f| f.write_str(string)).to_string(),
+                    $result.to_string()
+                );
+            }
+        };
+    }
+
+    test_fn!(plain_fn:                 Style::default();                  "hi");
+    test_fn!(red_fn:                   Red;                               "\x1B[31mhi\x1B[0m");
+    test_fn!(black_fn:                 Black.normal();                    "\x1B[30mhi\x1B[0m");
+    test_fn!(yellow_bold_fn:           Yellow.bold();                     "\x1B[1;33mhi\x1B[0m");
+    test_fn!(yellow_bold_2_fn:         Yellow.normal().bold();            "\x1B[1;33mhi\x1B[0m");
+    test_fn!(blue_underline_fn:        Blue.underline();                  "\x1B[4;34mhi\x1B[0m");
+    test_fn!(green_bold_ul_fn:         Green.bold().underline();          "\x1B[1;4;32mhi\x1B[0m");
+    test_fn!(green_bold_ul_2_fn:       Green.underline().bold();          "\x1B[1;4;32mhi\x1B[0m");
+    test_fn!(purple_on_white_fn:       Purple.on(White);                  "\x1B[47;35mhi\x1B[0m");
+    test_fn!(purple_on_white_2_fn:     Purple.normal().on(White);         "\x1B[47;35mhi\x1B[0m");
+    test_fn!(yellow_on_blue_fn:        Style::new().on(Blue).fg(Yellow);  "\x1B[44;33mhi\x1B[0m");
+    test_fn!(yellow_on_blue_2_fn:      Cyan.on(Blue).fg(Yellow);          "\x1B[44;33mhi\x1B[0m");
+    test_fn!(cyan_bold_on_white_fn:    Cyan.bold().on(White);             "\x1B[1;47;36mhi\x1B[0m");
+    test_fn!(cyan_ul_on_white_fn:      Cyan.underline().on(White);        "\x1B[4;47;36mhi\x1B[0m");
+    test_fn!(cyan_bold_ul_on_white_fn: Cyan.bold().underline().on(White); "\x1B[1;4;47;36mhi\x1B[0m");
+    test_fn!(cyan_ul_bold_on_white_fn: Cyan.underline().bold().on(White); "\x1B[1;4;47;36mhi\x1B[0m");
+    test_fn!(fixed_fn:                 Fixed(100);                        "\x1B[38;5;100mhi\x1B[0m");
+    test_fn!(fixed_on_purple_fn:       Fixed(100).on(Purple);             "\x1B[45;38;5;100mhi\x1B[0m");
+    test_fn!(fixed_on_fixed_fn:        Fixed(100).on(Fixed(200));         "\x1B[48;5;200;38;5;100mhi\x1B[0m");
+    test_fn!(rgb_fn:                   RGB(70,130,180);                   "\x1B[38;2;70;130;180mhi\x1B[0m");
+    test_fn!(rgb_on_blue_fn:           RGB(70,130,180).on(Blue);          "\x1B[44;38;2;70;130;180mhi\x1B[0m");
+    test_fn!(blue_on_rgb_fn:           Blue.on(RGB(70,130,180));          "\x1B[48;2;70;130;180;34mhi\x1B[0m");
+    test_fn!(rgb_on_rgb_fn:            RGB(70,130,180).on(RGB(5,10,15));  "\x1B[48;2;5;10;15;38;2;70;130;180mhi\x1B[0m");
+    test_fn!(bold_fn:                  Style::new().bold();               "\x1B[1mhi\x1B[0m");
+    test_fn!(underline_fn:             Style::new().underline();          "\x1B[4mhi\x1B[0m");
+    test_fn!(bunderline_fn:            Style::new().bold().underline();   "\x1B[1;4mhi\x1B[0m");
+    test_fn!(dimmed_fn:                Style::new().dimmed();             "\x1B[2mhi\x1B[0m");
+    test_fn!(italic_fn:                Style::new().italic();             "\x1B[3mhi\x1B[0m");
+    test_fn!(blink_fn:                 Style::new().blink();              "\x1B[5mhi\x1B[0m");
+    test_fn!(reverse_fn:               Style::new().reverse();            "\x1B[7mhi\x1B[0m");
+    test_fn!(hidden_fn:                Style::new().hidden();             "\x1B[8mhi\x1B[0m");
+    test_fn!(stricken_fn:              Style::new().strikethrough();      "\x1B[9mhi\x1B[0m");
+
+    #[test]
+    fn test_move() {
+        let string = String::from("hi");
+        assert_eq!(
+            Style::default()
+                .paint_fn(|f| f.write_str(&string))
+                .to_string(),
+            "hi"
+        );
+    }
+
+    #[test]
+    fn test_ref() {
+        let string = &String::from("hi");
+        assert_eq!(
+            Style::default()
+                .paint_fn(|f| f.write_str(string))
+                .to_string(),
+            "hi"
+        );
+    }
+
+    #[test]
+    fn test_debug() {
+        let a = vec![1, 2, 3];
+        assert_eq!(
+            Style::default()
+                .paint_fn(|f| std::fmt::Debug::fmt(&a, f))
+                .to_string(),
+            "[1, 2, 3]"
+        );
+        assert_eq!(
+            Style::default()
+                .bold()
+                .paint_fn(|f| std::fmt::Debug::fmt(&a, f))
+                .to_string(),
+            "\x1B[1m[1, 2, 3]\x1B[0m"
+        );
+    }
+
+    #[test]
+    fn test_write() {
+        assert_eq!(
+            Style::default()
+                .paint_fn(|f| write!(f, "{:.5}", 1.0))
+                .to_string(),
+            "1.00000"
+        );
+        assert_eq!(
+            Style::default()
+                .bold()
+                .paint_fn(|f| write!(f, "{:.5}", 1.0))
+                .to_string(),
+            "\x1B[1m1.00000\x1B[0m"
+        );
+    }
+
+    /// Can not write the same `impl Display` two or more times
+    /// else return error
+    #[test]
+    fn test_error() {
+        use std::fmt::Write;
+        let a = Style::default().paint("foo");
+        let _ = a.to_string();
+        let mut b = String::new();
+
+        assert!(write!(b, "{}", a).is_err());
+    }
 }
