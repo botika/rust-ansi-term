@@ -72,5 +72,5 @@ fn glow(c: u8, light_bg: bool) {
         Colour::White
     };
     let style = base.on(Colour::Fixed(c));
-    print!("{}", style.paint(&format!(" {:3} ", c)));
+    print!("{}", style.paint_fn(|f| write!(f, " {:3} ", c)));
 }
