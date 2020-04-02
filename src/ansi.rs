@@ -6,26 +6,23 @@ impl Style {
     /// Write any bytes that go *before* a piece of text to the given writer.
     #[inline]
     pub(crate) fn write_prefix(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // If there are actually no styles here, then don’t write *any* codes
-        // as the prefix. An empty ANSI code may not affect the terminal
-        // output at all, but a user may just want a code-free string.
-        if self.is_plain() {
-            return Ok(());
-        }
-
-        // Write the codes’ prefix, then write numbers, separated by
-        // semicolons, for each text style we want to apply.
-        f.write_str("\x1B[")?;
-
         let mut written_anything = false;
+        macro_rules! write_anything {
+            () => {
+                if written_anything {
+                    f.write_char(';')?;
+                } else {
+                    // Write the codes’ prefix, then write numbers, separated by
+                    // semicolons, for each text style we want to apply.
+                    f.write_str("\x1B[")?;
+                    written_anything = true;
+                }
+            };
+        }
         macro_rules! write_char {
             ($cond:ident, $c:expr) => {
                 if self.$cond {
-                    if written_anything {
-                        f.write_char(';')?;
-                    } else {
-                        written_anything = true;
-                    }
+                    write_anything!();
                     f.write_char($c)?;
                 }
             };
@@ -53,22 +50,21 @@ impl Style {
         // handled specially because the number codes are more complicated.
         // (see `write_background_code` and `write_foreground_code`)
         if let Some(bg) = self.background {
-            if written_anything {
-                f.write_char(';')?;
-            }
-            written_anything = true;
+            write_anything!();
             bg.write_background_code(f)?;
         }
 
         if let Some(fg) = self.foreground {
-            if written_anything {
-                f.write_char(';')?;
-            }
+            write_anything!();
             fg.write_foreground_code(f)?;
         }
 
-        // All the codes end with an `m`, because reasons.
-        f.write_char('m')
+        if written_anything {
+            // All the codes end with an `m`, because reasons.
+            f.write_char('m')
+        } else {
+            Ok(())
+        }
     }
 
     /// Write any bytes that go *after* a piece of text to the given writer.
