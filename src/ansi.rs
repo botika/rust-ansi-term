@@ -5,7 +5,7 @@ use std::fmt::{self, Display, Write};
 impl Style {
     /// Write any bytes that go *before* a piece of text to the given writer.
     #[inline]
-    pub(crate) fn write_prefix(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    pub(crate) fn write_prefix(&self, f: &mut fmt::Formatter) -> Result<bool, fmt::Error> {
         let mut written_anything = false;
         macro_rules! write_anything {
             () => {
@@ -61,19 +61,24 @@ impl Style {
 
         if written_anything {
             // All the codes end with an `m`, because reasons.
-            f.write_char('m')
+            f.write_char('m')?;
+            Ok(written_anything)
         } else {
-            Ok(())
+            Ok(written_anything)
         }
     }
 
     /// Write any bytes that go *after* a piece of text to the given writer.
     #[inline]
-    pub(crate) fn write_suffix(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.is_plain() {
-            Ok(())
-        } else {
+    pub(crate) fn write_suffix(
+        &self,
+        f: &mut fmt::Formatter,
+        written_anything: bool,
+    ) -> fmt::Result {
+        if written_anything {
             f.write_str(RESET)
+        } else {
+            Ok(())
         }
     }
 }

@@ -10,9 +10,9 @@ struct DisplayANSI<F: FnOnce(&mut fmt::Formatter) -> fmt::Result> {
 
 impl<F: FnOnce(&mut fmt::Formatter) -> fmt::Result> fmt::Display for DisplayANSI<F> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.style.write_prefix(f)?;
+        let written = self.style.write_prefix(f)?;
         self.f.take().ok_or(fmt::Error).and_then(|c| c(f))?;
-        self.style.write_suffix(f)
+        self.style.write_suffix(f, written)
     }
 }
 
