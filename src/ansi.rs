@@ -62,10 +62,9 @@ impl Style {
         if written_anything {
             // All the codes end with an `m`, because reasons.
             f.write_char('m')?;
-            Ok(written_anything)
-        } else {
-            Ok(written_anything)
         }
+
+        Ok(written_anything)
     }
 
     /// Write any bytes that go *after* a piece of text to the given writer.
