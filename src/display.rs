@@ -1,6 +1,6 @@
 use std::{cell::Cell, fmt};
 
-use style::{Colour, Style};
+use crate::{Colour, Style};
 
 /// An `DisplayANSI` includes a format function and a `Style`
 struct DisplayANSI<F: FnOnce(&mut fmt::Formatter) -> fmt::Result> {

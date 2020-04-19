@@ -13,6 +13,7 @@ license = "MIT"
 readme = "README.md"
 version = "0.1.0"
 repository = "https://github.com/botika/yansi-term"
+edition = "2018"
 
 [badges]
 travis-ci = { repository = "botika/yansi-term", branch = "master" }

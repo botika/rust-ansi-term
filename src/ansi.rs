@@ -1,6 +1,6 @@
-use style::{Colour, Style};
-
 use std::fmt::{self, Display, Write};
+
+use crate::{Colour, Style};
 
 impl Style {
     /// Write any bytes that go *before* a piece of text to the given writer.
@@ -130,7 +130,7 @@ impl Colour {
 
 #[cfg(test)]
 mod test {
-    use style::{Colour::*, Style};
+    use crate::{Colour::*, Style};
 
     macro_rules! test {
         ($name: ident: $style: expr; $input: expr => $result: expr) => {
