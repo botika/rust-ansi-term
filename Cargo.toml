@@ -11,7 +11,7 @@ documentation = "https://docs.rs/yansi-term"
 homepage = "https://github.com/botika/yansi-term"
 license = "MIT"
 readme = "README.md"
-version = "0.1.0"
+version = "0.1.1"
 repository = "https://github.com/botika/yansi-term"
 edition = "2018"
 
