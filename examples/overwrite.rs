@@ -8,15 +8,11 @@ fn main() {
         "{}",
         Red.paint_fn(|f| {
             f.write_str("RED")?;
-            let written = Style {
-                is_bold: true,
-                ..Default::default()
-            }
-            .write_prefix(f)?;
+            Style::new().bold().write_prefix(f)?;
             f.write_str("RED_BOLD")?;
-            Style::write_suffix(f, written)?;
-            Red.write_prefix(f)?;
-            f.write_str("RED")
+            Style::write_reset(f)?;
+            Black.write_prefix(f)?;
+            f.write_str("BLACK")
         })
     );
 }
