@@ -12,7 +12,10 @@ impl<F: FnOnce(&mut fmt::Formatter) -> fmt::Result> fmt::Display for DisplayANSI
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let written = self.style.write_prefix(f)?;
         self.f.take().ok_or(fmt::Error).and_then(|c| c(f))?;
-        Style::write_suffix(f, written)
+        if written {
+            Style::write_reset(f)?;
+        }
+        Ok(())
     }
 }
 

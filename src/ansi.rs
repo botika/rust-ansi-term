@@ -67,12 +67,9 @@ impl Style {
     }
 
     /// Write any bytes that go *after* a piece of text to the given writer.
-    pub fn write_suffix(f: &mut fmt::Formatter, written_anything: bool) -> fmt::Result {
-        if written_anything {
-            f.write_str(RESET)
-        } else {
-            Ok(())
-        }
+    #[inline]
+    pub fn write_reset(f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(RESET)
     }
 }
 
@@ -81,12 +78,6 @@ impl Colour {
     #[inline]
     pub fn write_prefix(self, f: &mut fmt::Formatter) -> Result<bool, fmt::Error> {
         self.normal().write_prefix(f)
-    }
-
-    /// Write any bytes that go *after* a piece of text to the given writer.
-    #[inline]
-    pub fn write_suffix(f: &mut fmt::Formatter, written_anything: bool) -> fmt::Result {
-        Style::write_suffix(f, written_anything)
     }
 }
 
