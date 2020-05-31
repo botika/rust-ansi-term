@@ -4,8 +4,7 @@ use crate::{Colour, Style};
 
 impl Style {
     /// Write any bytes that go *before* a piece of text to the given writer.
-    #[inline]
-    pub(crate) fn write_prefix(&self, f: &mut fmt::Formatter) -> Result<bool, fmt::Error> {
+    pub fn write_prefix(&self, f: &mut fmt::Formatter) -> Result<bool, fmt::Error> {
         let mut written_anything = false;
         macro_rules! write_anything {
             () => {
@@ -68,17 +67,26 @@ impl Style {
     }
 
     /// Write any bytes that go *after* a piece of text to the given writer.
-    #[inline]
-    pub(crate) fn write_suffix(
-        &self,
-        f: &mut fmt::Formatter,
-        written_anything: bool,
-    ) -> fmt::Result {
+    pub fn write_suffix(f: &mut fmt::Formatter, written_anything: bool) -> fmt::Result {
         if written_anything {
             f.write_str(RESET)
         } else {
             Ok(())
         }
+    }
+}
+
+impl Colour {
+    /// Write any bytes that go *before* a piece of text to the given writer.
+    #[inline]
+    pub fn write_prefix(self, f: &mut fmt::Formatter) -> Result<bool, fmt::Error> {
+        self.normal().write_prefix(f)
+    }
+
+    /// Write any bytes that go *after* a piece of text to the given writer.
+    #[inline]
+    pub fn write_suffix(f: &mut fmt::Formatter, written_anything: bool) -> fmt::Result {
+        Style::write_suffix(f, written_anything)
     }
 }
 
